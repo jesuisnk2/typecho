@@ -39,25 +39,34 @@ class NosineSlug_Plugin implements Typecho_Plugin_Interface
     {
         // include JS snippet
         ?>
-    <script>
-    function autoSlug() {
-        var title = $('#title'), slug = $('#slug');
-        if (slug.val().length || title.val().length === 0) return;
-        $.ajax({
-            url: '<?php Helper::options()->index('/action/nosine-slug?q='); ?>' + encodeURIComponent(title.val()),
-            success: function(data) {
-                if (data.result) {
-                    slug.val(data.result).focus();
-                    slug.siblings('pre').text(data.result);
-                }
+        <script>
+        function autoSlug() {
+            var title = $('#title'), slug = $('#slug');
+            // Nếu title trống thì xóa slug
+            if (title.val().trim().length === 0) {
+                slug.val('');
+                slug.siblings('pre').text('');
+                return;
             }
+            // Nếu slug đã có sẵn thì không làm gì
+            if (slug.val().length) return;
+            // Gửi request để tạo slug từ title
+            $.ajax({
+                url: '<?php Helper::options()->index('/action/nosine-slug?q='); ?>' + encodeURIComponent(title.val()),
+                success: function(data) {
+                    if (data.result) {
+                        slug.val(data.result).focus();
+                        slug.siblings('pre').text(data.result);
+                    }
+                }
+            });
+        }
+        
+        jQuery(function(){
+            $('#title').blur(autoSlug);
+            $('#slug').blur(autoSlug);
         });
-    }
-    jQuery(function(){
-        $('#title').blur(autoSlug);
-        $('#slug').blur(autoSlug);
-    });
-    </script>
+        </script>
 <?php
     }
 }
